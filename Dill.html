@@ -13,7 +13,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-s
 button,input,textarea{font:inherit}
 .wrap{max-width:760px;margin:auto;padding:20px 14px 50px}
 
-/* Navigasi anti-stuck: jalan pakai CSS :target walaupun JS mati/diblokir */
 .page{display:none;animation:fade .4s ease}
 #home{display:block}
 body:has(.page:target) #home{display:none}
@@ -36,9 +35,6 @@ p{line-height:1.85;white-space:pre-line}
 .btn:disabled{opacity:.55;cursor:not-allowed}
 .sticker{font-size:40px;margin:10px}
 .note{background:#fff1e9;padding:20px;border-radius:4px 18px 4px 18px;transform:rotate(-.4deg);line-height:1.9;white-space:pre-line}
-.toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0}
-.upload{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border:1px dashed #c99da5;border-radius:14px;background:#fff7f5;color:#765760;font-size:13px;cursor:pointer}
-.upload input{max-width:190px;font-size:12px}
 .scrapbook{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;align-items:start;margin:22px 0}
 .polaroid{background:#fff;padding:8px 8px 13px;box-shadow:0 5px 14px #513c3c18;border-radius:3px;min-width:0}
 .polaroid:nth-child(4n+1){transform:rotate(-2.4deg)}
@@ -117,19 +113,19 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
     <div class="center">
       <div class="script">little pieces of yesterday</div>
       <h2>Our Little Memories</h2>
-      <p class="small">Potongan-potongan kecil yang pernah berarti. Kamu bisa melihatnya satu per satu.</p>
+      <p class="small" id="mediaHint">Memuat kenangan...</p>
     </div>
-    <div class="toolbar">
-      <label class="upload">＋ Pilih foto <input id="photoPicker" type="file" accept="image/*" multiple></label>
-      <label class="upload">＋ Pilih video <input id="videoPicker" type="file" accept="video/*" multiple></label>
-    </div>
-    <p class="small center" id="mediaHint">Pilih foto/video dari perangkat untuk melihat pratinjau scrapbook di halaman ini.</p>
+
     <div class="scrapbook" id="photoGallery"></div>
-    <div class="center">
-      <div class="script">some moments were moving...</div>
-      <h2>Little Videos 🎞️</h2>
+
+    <div id="videoSection" style="display:none">
+      <div class="center">
+        <div class="script">some moments were moving...</div>
+        <h2>Little Videos 🎞️</h2>
+      </div>
+      <div id="videoGallery"></div>
     </div>
-    <div id="videoGallery"></div>
+
     <div class="center">
       <a class="btn secondary" href="#letter">← Kembali</a>
       <a class="btn" href="#littlePlan">Ada satu hal lagi... ♡</a>
@@ -145,17 +141,16 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
       <h2>Satu Rencana Kecil</h2>
       <p>Ada satu janji yang ga akan aku lupa dan aku bakal tepatin tapi nanti yaa</p>
     </div>
+
     <div class="sketch-frame">
       <img id="sketchPreview" src="" alt="Sketsa rancangan baju" style="display:none">
       <div id="sketchPlaceholder" class="center" style="padding:35px 12px;color:#987f85">
         <div style="font-size:38px">✎</div>
         <div class="script">your little design goes here</div>
-        <p class="small">Masukkan foto sketsa rancangan baju di bagian ini.</p>
+        <p class="small">Upload foto sketsa ke folder <code>sketsa</code> di repo GitHub kamu.</p>
       </div>
     </div>
-    <div class="center">
-      <label class="upload">＋ Pilih foto sketsa <input id="sketchPicker" type="file" accept="image/*"></label>
-    </div>
+
     <div class="sketch-caption" id="sketchCaption">Aku punya janji sama kamu ,buatin baju buat kamu yang aku desain sendiri ,pasti lucu kalo udah jadi terus di pake sama kamu,itu aku  pikirin desain nya biar cocok sama pas buat kamu.
 </div>
     <div class="center">
@@ -228,6 +223,19 @@ Aku harap yang aku rasakan sama juga sama yang kamu rasakan.</p>
 </div>
 
 <script>
+// =========================================================================
+// 1. ISI USERNAME & NAMA REPOSITORY GITHUB KAMU DI SINI
+// =========================================================================
+const GITHUB_USER = "Dilzz788";
+const GITHUB_REPO = "Mhmdadlftr";
+
+const FOLDER_FOTO   = "foto";
+const FOLDER_VIDEO  = "video";
+const FOLDER_SKETSA = "sketsa";
+
+// =========================================================================
+// 2. ENDPOINT FORMSPREE
+// =========================================================================
 const FORMSPREE_URL = "https://formspree.io/f/mnpdvwlv";
 
 document.body.classList.add("js-ready");
@@ -249,28 +257,18 @@ function syncFromHash() {
 window.addEventListener("hashchange", syncFromHash);
 syncFromHash();
 
-// Galeri Foto & Video
-var photoPicker = document.getElementById("photoPicker");
-var videoPicker = document.getElementById("videoPicker");
-var photoGallery = document.getElementById("photoGallery");
-var videoGallery = document.getElementById("videoGallery");
-var objectUrls = [];
-
-function makePhotoCard(file, index) {
-  var url = URL.createObjectURL(file);
-  objectUrls.push(url);
-  var card = document.createElement("div");
-  card.className = "polaroid";
-  var img = document.createElement("img");
-  img.src = url;
-  img.alt = file.name;
-  img.loading = "lazy";
-  img.onclick = function () { openViewer(url); };
-  var cap = document.createElement("div");
-  cap.className = "caption";
-  cap.textContent = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"][index % 4];
-  card.append(img, cap);
-  return card;
+async function listGitHubFolder(folderPath, regexExt) {
+  var cleanPath = folderPath.replace(/^\/+|\/+$/g, "");
+  var apiUrl = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + cleanPath;
+  var res = await fetch(apiUrl);
+  if (!res.ok) return [];
+  var items = await res.json();
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter(function (item) { return item.type === "file" && regexExt.test(item.name); })
+    .map(function (item) {
+      return cleanPath + "/" + encodeURIComponent(item.name);
+    });
 }
 
 function shuffle(items) {
@@ -282,38 +280,80 @@ function shuffle(items) {
   return a;
 }
 
-if (photoPicker) {
-  photoPicker.addEventListener("change", function () {
-    photoGallery.replaceChildren();
-    var files = shuffle(Array.from(photoPicker.files || []).filter(function (f) { return f.type.startsWith("image/"); }));
-    files.forEach(function (f, i) { photoGallery.appendChild(makePhotoCard(f, i)); });
-    document.getElementById("mediaHint").textContent = files.length
-      ? files.length + " foto dipilih. Urutannya diacak seperti scrapbook."
-      : "Belum ada foto yang dipilih.";
-  });
-}
+(async function loadRepoMedia() {
+  var hint = document.getElementById("mediaHint");
+  var photoGallery = document.getElementById("photoGallery");
+  var videoSection = document.getElementById("videoSection");
+  var videoGallery = document.getElementById("videoGallery");
 
-if (videoPicker) {
-  videoPicker.addEventListener("change", function () {
-    videoGallery.replaceChildren();
-    Array.from(videoPicker.files || []).filter(function (f) { return f.type.startsWith("video/"); }).forEach(function (file, i) {
-      var url = URL.createObjectURL(file);
-      objectUrls.push(url);
-      var card = document.createElement("div");
-      card.className = "video-card";
-      var player = document.createElement("video");
-      player.src = url;
-      player.controls = true;
-      player.preload = "metadata";
-      player.playsInline = true;
-      var cap = document.createElement("div");
-      cap.className = "caption";
-      cap.textContent = "a little moving memory " + (i + 1) + " ♡";
-      card.append(player, cap);
-      videoGallery.appendChild(card);
-    });
-  });
-}
+  if (GITHUB_USER === "USERNAME_GITHUB_KAMU" || GITHUB_REPO === "NAMA_REPO_KAMU") {
+    hint.textContent = "Isi GITHUB_USER dan GITHUB_REPO di dalam kode HTML dulu supaya foto otomatis muncul.";
+    return;
+  }
+
+  try {
+    var photos = shuffle(await listGitHubFolder(FOLDER_FOTO, /\.(jpe?g|png|webp|gif)$/i));
+    var captions = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"];
+
+    if (photos.length) {
+      photos.forEach(function (src, index) {
+        var card = document.createElement("div");
+        card.className = "polaroid";
+
+        var img = document.createElement("img");
+        img.src = src;
+        img.alt = "Kenangan " + (index + 1);
+        img.loading = "lazy";
+        img.onclick = function () { openViewer(src); };
+
+        var cap = document.createElement("div");
+        cap.className = "caption";
+        cap.textContent = captions[index % captions.length];
+
+        card.append(img, cap);
+        photoGallery.appendChild(card);
+      });
+      hint.textContent = "Potongan-potongan kecil yang pernah berarti. Tap foto untuk memperbesar.";
+    } else {
+      hint.textContent = "Belum ada foto di folder '" + FOLDER_FOTO + "' repo GitHub.";
+    }
+
+    var videos = await listGitHubFolder(FOLDER_VIDEO, /\.(mp4|webm|mov|m4v)$/i);
+    if (videos.length) {
+      videoSection.style.display = "block";
+      videos.forEach(function (src, i) {
+        var card = document.createElement("div");
+        card.className = "video-card";
+
+        var player = document.createElement("video");
+        player.src = src;
+        player.controls = true;
+        player.preload = "metadata";
+        player.playsInline = true;
+
+        var cap = document.createElement("div");
+        cap.className = "caption";
+        cap.textContent = "a little moving memory " + (i + 1) + " ♡";
+
+        card.append(player, cap);
+        videoGallery.appendChild(card);
+      });
+    }
+
+    var sketches = await listGitHubFolder(FOLDER_SKETSA, /\.(jpe?g|png|webp|gif)$/i);
+    if (sketches.length) {
+      var preview = document.getElementById("sketchPreview");
+      var placeholder = document.getElementById("sketchPlaceholder");
+      preview.src = sketches[0];
+      preview.onload = function () {
+        preview.style.display = "block";
+        placeholder.style.display = "none";
+      };
+    }
+  } catch (e) {
+    hint.textContent = "Gagal memuat daftar foto dari GitHub.";
+  }
+})();
 
 function openViewer(src) {
   document.getElementById("largePhoto").src = src;
@@ -329,22 +369,7 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") closeViewer();
 });
 
-// Foto sketsa baju
-var sketchPicker = document.getElementById("sketchPicker");
-if (sketchPicker) {
-  sketchPicker.addEventListener("change", function () {
-    var file = sketchPicker.files && sketchPicker.files[0];
-    if (!file) return;
-    var preview = document.getElementById("sketchPreview");
-    var url = URL.createObjectURL(file);
-    objectUrls.push(url);
-    preview.src = url;
-    preview.style.display = "block";
-    document.getElementById("sketchPlaceholder").style.display = "none";
-  });
-}
-
-// Kirim Formspree (AJAX + Fallback POST langsung)
+// Kirim Formspree
 var answerForm = document.getElementById("answerForm");
 if (answerForm) {
   answerForm.addEventListener("submit", async function (e) {
@@ -395,7 +420,6 @@ if (answerForm) {
       location.hash = "end";
       showPage("end");
     } catch (err) {
-      // Kalau fetch diblokir browser/CORS, paksa kirim form HTML standar ke Formspree
       if (err && err.name === "TypeError") {
         status.textContent = "Mengalihkan pengiriman...";
         answerForm.submit();
