@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8e9e8">
+<title>A Little Book of Memories ♡</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Caveat:wght@500;600&display=swap');
+:root{--bg:#f7e8e7;--paper:#fffaf4;--rose:#b87985;--ink:#514047;--muted:#987f85;--line:#e8d4d4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}
+button,input,textarea{font:inherit}
+.wrap{max-width:760px;margin:auto;padding:20px 14px 50px}
+
+/* Navigasi anti-stuck: jalan pakai CSS :target walaupun JS mati/diblokir */
+.page{display:none;animation:fade .4s ease}
+#home{display:block}
+body:has(.page:target) #home{display:none}
+.page:target,#home:target{display:block!important}
+.page.js-active{display:block!important}
+body.js-ready .page{display:none!important}
+body.js-ready .page.js-active{display:block!important}
+
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.paper{background:var(--paper);border-radius:24px;padding:25px 19px;box-shadow:0 10px 35px #76545b12}
+.center{text-align:center}
+.script{font-family:'Caveat',cursive;color:var(--rose);font-size:27px}
+h1,h2{font-family:'Playfair Display',serif;font-weight:500}
+h1{font-size:clamp(30px,7vw,42px);margin:12px 0}
+h2{font-size:29px;margin:10px 0}
+p{line-height:1.85;white-space:pre-line}
+.small{font-size:12px;color:var(--muted);line-height:1.6}
+.btn{display:inline-block;text-decoration:none;border:0;border-radius:30px;background:var(--rose);color:white;padding:13px 22px;margin:8px 4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn.secondary{background:#f1e1e3;color:#795a62}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.sticker{font-size:40px;margin:10px}
+.note{background:#fff1e9;padding:20px;border-radius:4px 18px 4px 18px;transform:rotate(-.4deg);line-height:1.9;white-space:pre-line}
+.toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.upload{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border:1px dashed #c99da5;border-radius:14px;background:#fff7f5;color:#765760;font-size:13px;cursor:pointer}
+.upload input{max-width:190px;font-size:12px}
+.scrapbook{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;align-items:start;margin:22px 0}
+.polaroid{background:#fff;padding:8px 8px 13px;box-shadow:0 5px 14px #513c3c18;border-radius:3px;min-width:0}
+.polaroid:nth-child(4n+1){transform:rotate(-2.4deg)}
+.polaroid:nth-child(4n+2){transform:rotate(1.8deg);margin-top:14px}
+.polaroid:nth-child(4n+3){transform:rotate(1.2deg);margin-top:-5px}
+.polaroid:nth-child(4n){transform:rotate(-1.5deg);margin-top:12px}
+.polaroid img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:#f0e5e3;cursor:zoom-in}
+.polaroid .caption{font-family:'Caveat',cursive;text-align:center;font-size:19px;padding-top:8px;min-height:32px}
+.video-card{background:#fff;padding:9px;margin:16px 0;box-shadow:0 4px 14px #513c3c12;transform:rotate(.3deg)}
+.video-card video{width:100%;display:block;border-radius:7px;background:#eee;max-height:420px}
+.video-card .caption{font-family:'Caveat',cursive;text-align:center;font-size:20px;padding:8px}
+.field{width:100%;border:1px solid var(--line);background:#fffdfb;border-radius:13px;padding:13px;margin-top:9px;color:var(--ink)}
+textarea.field{min-height:105px;resize:vertical}
+.question{margin:22px 0;text-align:left}
+#status{font-size:13px;margin:12px 0;color:var(--muted)}
+#viewer{display:none;position:fixed;inset:0;background:#21171eeF;z-index:10;align-items:center;justify-content:center;padding:16px}
+#viewer img{max-width:100%;max-height:85vh;object-fit:contain}
+#viewer button{position:absolute;right:18px;top:12px;background:transparent;border:0;color:white;font-size:34px;cursor:pointer}
+.footer{text-align:center;font-size:11px;color:#a38b90;margin-top:18px}
+.sketch-frame{background:#fff;padding:10px;max-width:440px;margin:20px auto;box-shadow:0 5px 16px #513c3c18;transform:rotate(-1deg)}
+.sketch-frame img{display:block;width:100%;max-height:520px;object-fit:contain;background:#f3ece8;min-height:180px}
+.sketch-caption{background:#fff4ee;border-left:3px solid #c58d98;padding:16px;margin:18px 0;text-align:left;line-height:1.8;white-space:pre-line}
+.closing-mark{font-family:'Caveat',cursive;font-size:25px;color:var(--rose);margin-top:22px}
+@media(min-width:600px){.wrap{padding-top:38px}.paper{padding:32px}.scrapbook{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HALAMAN 1 -->
+<section class="page js-active" id="home">
+  <div class="paper center">
+    <div class="sticker">💌</div>
+    <div class="script">a little letter for you</div>
+    <h1>Hai,Bebii</h1>
+    <p>Aku ada sesuatu yang pengen aku sampein sama tanyakan sama kamu ,aku harap kamu jawab yaa</p>
+    <div class="script">would you read it?</div>
+    <a class="btn" href="#letter">Buka suratnya ♡</a>
+    <div class="footer">By Bibee</div>
+  </div>
+</section>
+
+<!-- HALAMAN 2 -->
+<section class="page" id="letter">
+  <div class="paper">
+    <div class="center">
+      <div class="script">from my heart</div>
+      <h2>Buat kamu,</h2>
+    </div>
+    <div class="note" id="letterText">Hai...
+
+Aku pengen minta maaf sama kamu atas semua perlakuan aku yang ngenyakitin kamu ,semua ini bukan salah kamu tapi aku aja yang masih belum dewasa buat ngejalanin hubungan ini ,aku minta maaf aku pernah kasar sama kamu ngeluarin kata kata yang seharunya nga aku keluarin dan jadi sakit hati buat kamu maaf yaa,
+aku cuma bisa ngucapin seribu kata maaf buat kamu ,jujur ya berat aja gitu sekarang kita saling padiem diem yang sebelumnya keliatan lucu malah berakhir kaya gini,
+yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendiri yang ngebuat kamu jadi takut.
+
+ sekarang aku serasa hampa banget ,yang biasa nya tiap malem telponan sekarang cuma bisa diem scrol cari kesibukan ,dan ini di buat juga jam 2.34 loh ,yang biasanya saling cerita 
+ seudah isya sekarang aku cuma bisa baca chat nya aja ,sekarang aku kangen kamu dari manjanya,lucunya,cantiknya semuanya hal hal kecil dari kamu aku kangen ,aku tiap malem nangis terus 
+ tiap bangun tidur nangis terus keinget kalo bangun tidur suka ngechat kamu, sekarang hidup aku hampa bener bener hampa ga ada semangat sama sekali ,sampe kepikiran buat nge akhirin semuanya
+ cari cara sana sini,ga ada tempat buat cerita sama sekali ,aku masih idul,idil,candil,abang,bibee yang masih mencintai kamu sampe kapanpun ,aku ga akan cari orang baru lagi aku udah tutup pintu 
+ hati aku di dalem nya udah ada kamu nga akan bisa tergantikan aku masih sayang sama kamu sampai kapan pun itu kamu cinta terakhir nya aku,dan aku harap kamu juga begitu, sekarang aku lagi belajar 
+ ngebenah diri aku memperbaiki semua kekurangan aku biar jadi pribadi yang lebih baik lagi yang bisa jadi versi terbaik dalam diri aku ,sama aku terus yaa ,tapi untuk sekarang kita fokus masing masing yaa
+ kita saling berproses saling kejar cita cita sampe kita ketemu di versi terbaik kita yaa,kita jadi temen baik aja yaa.
+
+  
+— Dari seseorang yang sedang belajar menjadi lebih baik.</div>
+    <div class="center">
+      <a class="btn secondary" href="#home">← Kembali</a>
+      <a class="btn" href="#memories">Lihat sedikit kenangan ♡</a>
+    </div>
+  </div>
+</section>
+
+<!-- HALAMAN 3 -->
+<section class="page" id="memories">
+  <div class="paper">
+    <div class="center">
+      <div class="script">little pieces of yesterday</div>
+      <h2>Our Little Memories</h2>
+      <p class="small">Potongan-potongan kecil yang pernah berarti. Kamu bisa melihatnya satu per satu.</p>
+    </div>
+    <div class="toolbar">
+      <label class="upload">＋ Pilih foto <input id="photoPicker" type="file" accept="image/*" multiple></label>
+      <label class="upload">＋ Pilih video <input id="videoPicker" type="file" accept="video/*" multiple></label>
+    </div>
+    <p class="small center" id="mediaHint">Pilih foto/video dari perangkat untuk melihat pratinjau scrapbook di halaman ini.</p>
+    <div class="scrapbook" id="photoGallery"></div>
+    <div class="center">
+      <div class="script">some moments were moving...</div>
+      <h2>Little Videos 🎞️</h2>
+    </div>
+    <div id="videoGallery"></div>
+    <div class="center">
+      <a class="btn secondary" href="#letter">← Kembali</a>
+      <a class="btn" href="#littlePlan">Ada satu hal lagi... ♡</a>
+    </div>
+  </div>
+</section>
+
+<!-- HALAMAN 4 -->
+<section class="page" id="littlePlan">
+  <div class="paper">
+    <div class="center">
+      <div class="script">a little idea from me</div>
+      <h2>Satu Rencana Kecil</h2>
+      <p>Ada satu janji yang ga akan aku lupa dan aku bakal tepatin tapi nanti yaa</p>
+    </div>
+    <div class="sketch-frame">
+      <img id="sketchPreview" src="" alt="Sketsa rancangan baju" style="display:none">
+      <div id="sketchPlaceholder" class="center" style="padding:35px 12px;color:#987f85">
+        <div style="font-size:38px">✎</div>
+        <div class="script">your little design goes here</div>
+        <p class="small">Masukkan foto sketsa rancangan baju di bagian ini.</p>
+      </div>
+    </div>
+    <div class="center">
+      <label class="upload">＋ Pilih foto sketsa <input id="sketchPicker" type="file" accept="image/*"></label>
+    </div>
+    <div class="sketch-caption" id="sketchCaption">Aku punya janji sama kamu ,buatin baju buat kamu yang aku desain sendiri ,pasti lucu kalo udah jadi terus di pake sama kamu,itu aku  pikirin desain nya biar cocok sama pas buat kamu.
+</div>
+    <div class="center">
+      <p class="small">____</p>
+      <a class="btn secondary" href="#memories">← Kembali</a>
+      <a class="btn" href="#questions">Lanjut, ada yang pengen aku tanyain ♡</a>
+    </div>
+  </div>
+</section>
+
+<!-- HALAMAN 5: FORMSPREE -->
+<section class="page" id="questions">
+  <div class="paper">
+    <div class="center">
+      <div class="sticker">🌷</div>
+      <div class="script">one last thing</div>
+      <h2>Boleh ya aku nanya?</h2>
+      <p>Jawab aja sesuai apa yang kamu rasain.</p>
+    </div>
+    <form id="answerForm" action="https://formspree.io/f/mnpdvwlv" method="POST">
+      <input type="hidden" name="_subject" value="Jawaban A Little Book of Memories">
+      <input type="hidden" id="waktuKirim" name="waktu" value="">
+
+      <div class="question">
+        <label for="j1">1. Boleh ga kita jadi temen baik aja? Kita saling berproses saling meng upgrade diri kita sampe jadi versi yang terbaik</label>
+        <input type="hidden" name="pertanyaan1" value="Boleh ga kita jadi temen baik aja? Kita saling berproses saling meng upgrade diri kita sampe jadi versi yang terbaik">
+        <textarea id="j1" class="field" name="jawaban1" required placeholder="Tulis jawabanmu di sini..."></textarea>
+      </div>
+
+      <div class="question">
+        <label for="j2">2. Kalo misalnya kita saling berproses terus ngeupgrade diri sampe kita berada di versi terbaik ,terus aku datang ke kamu buat sesuatu hal serius kamu nerima gaa?</label>
+        <input type="hidden" name="pertanyaan2" value="Kalo misalnya kita saling berproses terus ngeupgrade diri sampe kita berada di versi terbaik ,terus aku datang ke kamu buat sesuatu hal serius kamu nerima gaa?">
+        <textarea id="j2" class="field" name="jawaban2" required placeholder="Tulis jawabanmu di sini..."></textarea>
+      </div>
+
+      <div class="question">
+        <label for="j3">3. Sama aku terus yaa? ,aku harap kita saling takut kehilangan tapi cuma butuh waktu aja buat bisa kembali dan bertemu di versi terbaik kita</label>
+        <input type="hidden" name="pertanyaan3" value="Sama aku terus yaa? ,aku harap kita saling takut kehilangan tapi cuma butuh waktu aja buat bisa kembali dan bertemu di versi terbaik kita">
+        <textarea id="j3" class="field" name="jawaban3" required placeholder="Tulis jawabanmu di sini..."></textarea>
+      </div>
+
+      <div class="center">
+        <a class="btn secondary" href="#littlePlan">← Kembali</a>
+        <button class="btn" type="submit" id="send">Kirim jawabanku ♡</button>
+      </div>
+      <div class="center" id="status"></div>
+    </form>
+  </div>
+</section>
+
+<!-- HALAMAN 6 -->
+<section class="page" id="end">
+  <div class="paper center">
+    <div class="sticker">🤍</div>
+    <div class="script">thank you for being here</div>
+    <h1>Terima kasih.</h1>
+    <p>makasih udaa baca semuanya.
+
+Aku harap yang aku rasakan sama juga sama yang kamu rasakan.</p>
+    <div class="closing-mark">Sampai di sini dulu, ya. 🤍</div>
+    <div class="script">with sincerity, always.</div>
+  </div>
+</section>
+
+</div>
+
+<div id="viewer" onclick="closeViewer()">
+  <button type="button" aria-label="Tutup">×</button>
+  <img id="largePhoto" alt="Foto kenangan">
+</div>
+
+<script>
+const FORMSPREE_URL = "https://formspree.io/f/mnpdvwlv";
+
+document.body.classList.add("js-ready");
+
+function showPage(id) {
+  var target = document.getElementById(id) || document.getElementById("home");
+  document.querySelectorAll(".page").forEach(function (p) {
+    p.classList.remove("js-active");
+  });
+  target.classList.add("js-active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function syncFromHash() {
+  var id = (location.hash || "#home").replace("#", "");
+  showPage(id);
+}
+
+window.addEventListener("hashchange", syncFromHash);
+syncFromHash();
+
+// Galeri Foto & Video
+var photoPicker = document.getElementById("photoPicker");
+var videoPicker = document.getElementById("videoPicker");
+var photoGallery = document.getElementById("photoGallery");
+var videoGallery = document.getElementById("videoGallery");
+var objectUrls = [];
+
+function makePhotoCard(file, index) {
+  var url = URL.createObjectURL(file);
+  objectUrls.push(url);
+  var card = document.createElement("div");
+  card.className = "polaroid";
+  var img = document.createElement("img");
+  img.src = url;
+  img.alt = file.name;
+  img.loading = "lazy";
+  img.onclick = function () { openViewer(url); };
+  var cap = document.createElement("div");
+  cap.className = "caption";
+  cap.textContent = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"][index % 4];
+  card.append(img, cap);
+  return card;
+}
+
+function shuffle(items) {
+  var a = items.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+if (photoPicker) {
+  photoPicker.addEventListener("change", function () {
+    photoGallery.replaceChildren();
+    var files = shuffle(Array.from(photoPicker.files || []).filter(function (f) { return f.type.startsWith("image/"); }));
+    files.forEach(function (f, i) { photoGallery.appendChild(makePhotoCard(f, i)); });
+    document.getElementById("mediaHint").textContent = files.length
+      ? files.length + " foto dipilih. Urutannya diacak seperti scrapbook."
+      : "Belum ada foto yang dipilih.";
+  });
+}
+
+if (videoPicker) {
+  videoPicker.addEventListener("change", function () {
+    videoGallery.replaceChildren();
+    Array.from(videoPicker.files || []).filter(function (f) { return f.type.startsWith("video/"); }).forEach(function (file, i) {
+      var url = URL.createObjectURL(file);
+      objectUrls.push(url);
+      var card = document.createElement("div");
+      card.className = "video-card";
+      var player = document.createElement("video");
+      player.src = url;
+      player.controls = true;
+      player.preload = "metadata";
+      player.playsInline = true;
+      var cap = document.createElement("div");
+      cap.className = "caption";
+      cap.textContent = "a little moving memory " + (i + 1) + " ♡";
+      card.append(player, cap);
+      videoGallery.appendChild(card);
+    });
+  });
+}
+
+function openViewer(src) {
+  document.getElementById("largePhoto").src = src;
+  document.getElementById("viewer").style.display = "flex";
+}
+
+function closeViewer() {
+  document.getElementById("viewer").style.display = "none";
+  document.getElementById("largePhoto").src = "";
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") closeViewer();
+});
+
+// Foto sketsa baju
+var sketchPicker = document.getElementById("sketchPicker");
+if (sketchPicker) {
+  sketchPicker.addEventListener("change", function () {
+    var file = sketchPicker.files && sketchPicker.files[0];
+    if (!file) return;
+    var preview = document.getElementById("sketchPreview");
+    var url = URL.createObjectURL(file);
+    objectUrls.push(url);
+    preview.src = url;
+    preview.style.display = "block";
+    document.getElementById("sketchPlaceholder").style.display = "none";
+  });
+}
+
+// Kirim Formspree (AJAX + Fallback POST langsung)
+var answerForm = document.getElementById("answerForm");
+if (answerForm) {
+  answerForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var status = document.getElementById("status");
+    var button = document.getElementById("send");
+    var waktuInput = document.getElementById("waktuKirim");
+    if (waktuInput) {
+      waktuInput.value = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+    }
+
+    var payload = {
+      _subject: "Jawaban A Little Book of Memories",
+      waktu: waktuInput ? waktuInput.value : "",
+      pertanyaan1: answerForm.elements["pertanyaan1"].value,
+      jawaban1: answerForm.elements["jawaban1"].value.trim(),
+      pertanyaan2: answerForm.elements["pertanyaan2"].value,
+      jawaban2: answerForm.elements["jawaban2"].value.trim(),
+      pertanyaan3: answerForm.elements["pertanyaan3"].value,
+      jawaban3: answerForm.elements["jawaban3"].value.trim()
+    };
+
+    button.disabled = true;
+    status.textContent = "Mengirim jawaban...";
+
+    try {
+      var response = await fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        var msg = "Pengiriman gagal. Coba lagi beberapa saat.";
+        try {
+          var result = await response.json();
+          if (result.errors && result.errors.length) {
+            msg = result.errors.map(function (item) { return item.message; }).join(" ");
+          }
+        } catch (_) {}
+        throw new Error(msg);
+      }
+
+      status.textContent = "Terima kasih sudah menjawab ♡";
+      location.hash = "end";
+      showPage("end");
+    } catch (err) {
+      // Kalau fetch diblokir browser/CORS, paksa kirim form HTML standar ke Formspree
+      if (err && err.name === "TypeError") {
+        status.textContent = "Mengalihkan pengiriman...";
+        answerForm.submit();
+        return;
+      }
+      status.textContent = err.message || "Pengiriman gagal. Periksa koneksi internet lalu coba lagi.";
+      button.disabled = false;
+    }
+  });
+}
+</script>
+</body>
+  </html>
+  
