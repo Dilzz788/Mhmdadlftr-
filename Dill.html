@@ -147,7 +147,7 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
       <div id="sketchPlaceholder" class="center" style="padding:35px 12px;color:#987f85">
         <div style="font-size:38px">✎</div>
         <div class="script">your little design goes here</div>
-        <p class="small">Upload foto sketsa ke folder <code>sketsa</code> di repo GitHub kamu.</p>
+        <p class="small">Foto sketsa rancangan baju akan tampil otomatis dari folder <code>sketsa</code>.</p>
       </div>
     </div>
 
@@ -223,19 +223,11 @@ Aku harap yang aku rasakan sama juga sama yang kamu rasakan.</p>
 </div>
 
 <script>
-// =========================================================================
-// 1. ISI USERNAME & NAMA REPOSITORY GITHUB KAMU DI SINI
-// =========================================================================
-const GITHUB_USER = "Dilzz788";
-const GITHUB_REPO = "Mhmdadlftr";
-
-const FOLDER_FOTO   = "memories";
+const GITHUB_USER   = "dilzz788";
+const GITHUB_REPO   = "Mhmdadlftr-";
+const FOLDER_FOTO   = "foto";
 const FOLDER_VIDEO  = "video";
 const FOLDER_SKETSA = "sketsa";
-
-// =========================================================================
-// 2. ENDPOINT FORMSPREE
-// =========================================================================
 const FORMSPREE_URL = "https://formspree.io/f/mnpdvwlv";
 
 document.body.classList.add("js-ready");
@@ -257,18 +249,25 @@ function syncFromHash() {
 window.addEventListener("hashchange", syncFromHash);
 syncFromHash();
 
-async function listGitHubFolder(folderPath, regexExt) {
-  var cleanPath = folderPath.replace(/^\/+|\/+$/g, "");
-  var apiUrl = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + cleanPath;
-  var res = await fetch(apiUrl);
-  if (!res.ok) return [];
-  var items = await res.json();
-  if (!Array.isArray(items)) return [];
-  return items
-    .filter(function (item) { return item.type === "file" && regexExt.test(item.name); })
-    .map(function (item) {
-      return cleanPath + "/" + encodeURIComponent(item.name);
-    });
+async function fetchFolderFiles(folderPath) {
+  var clean = (folderPath || "").replace(/^\/+|\/+$/g, "");
+  var apiEndpoints = [
+    "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean,
+    "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean + "?ref=main",
+    "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean + "?ref=master"
+  ];
+
+  for (var i = 0; i < apiEndpoints.length; i++) {
+    try {
+      var res = await fetch(apiEndpoints[i], { cache: "no-store" });
+      if (!res.ok) continue;
+      var data = await res.json();
+      if (Array.isArray(data)) {
+        return data.filter(function (f) { return f && f.type === "file"; });
+      }
+    } catch (_) {}
+  }
+  return [];
 }
 
 function shuffle(items) {
@@ -280,78 +279,125 @@ function shuffle(items) {
   return a;
 }
 
-(async function loadRepoMedia() {
+function buildImgCandidates(folder, fileObj) {
+  var encName = encodeURIComponent(fileObj.name);
+  var list = [
+    folder + "/" + encName,
+    "./" + folder + "/" + encName,
+    "/" + GITHUB_REPO + "/" + folder + "/" + encName,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/main/" + folder + "/" + encName,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/HEAD/" + folder + "/" + encName
+  ];
+  if (fileObj.download_url) list.push(fileObj.download_url);
+  return list;
+}
+
+function attachSmartFallback(imgEl, candidates) {
+  var idx = 0;
+  imgEl.src = candidates[0];
+  imgEl.onerror = function () {
+    idx++;
+    if (idx < candidates.length) {
+      imgEl.src = candidates[idx];
+    }
+  };
+}
+
+(async function loadAllMedia() {
   var hint = document.getElementById("mediaHint");
   var photoGallery = document.getElementById("photoGallery");
   var videoSection = document.getElementById("videoSection");
   var videoGallery = document.getElementById("videoGallery");
 
-  if (GITHUB_USER === "USERNAME_GITHUB_KAMU" || GITHUB_REPO === "NAMA_REPO_KAMU") {
-    hint.textContent = "Isi GITHUB_USER dan GITHUB_REPO di dalam kode HTML dulu supaya foto otomatis muncul.";
-    return;
+  var imgExt = /\.(jpe?g|png|webp|gif|jfif)$/i;
+  var vidExt = /\.(mp4|webm|mov|m4v)$/i;
+  var captions = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"];
+
+  // Foto
+  var photoCandidatesFolders = [FOLDER_FOTO, "Foto", "FOTO"];
+  var photoFiles = [];
+  var activePhotoFolder = FOLDER_FOTO;
+
+  for (var i = 0; i < photoCandidatesFolders.length; i++) {
+    var found = await fetchFolderFiles(photoCandidatesFolders[i]);
+    if (found.length) {
+      photoFiles = found;
+      activePhotoFolder = photoCandidatesFolders[i];
+      break;
+    }
   }
 
-  try {
-    var photos = shuffle(await listGitHubFolder(FOLDER_FOTO, /\.(jpe?g|png|webp|gif)$/i));
-    var captions = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"];
+  var validPhotos = shuffle(photoFiles.filter(function (f) { return imgExt.test(f.name); }));
 
-    if (photos.length) {
-      photos.forEach(function (src, index) {
-        var card = document.createElement("div");
-        card.className = "polaroid";
+  if (validPhotos.length) {
+    photoGallery.innerHTML = "";
+    validPhotos.forEach(function (fileObj, index) {
+      var card = document.createElement("div");
+      card.className = "polaroid";
 
-        var img = document.createElement("img");
-        img.src = src;
-        img.alt = "Kenangan " + (index + 1);
-        img.loading = "lazy";
-        img.onclick = function () { openViewer(src); };
+      var img = document.createElement("img");
+      img.alt = "Kenangan " + (index + 1);
+      img.loading = "eager";
+      var srcs = buildImgCandidates(activePhotoFolder, fileObj);
+      attachSmartFallback(img, srcs);
+      img.onclick = function () { openViewer(img.currentSrc || img.src); };
 
-        var cap = document.createElement("div");
-        cap.className = "caption";
-        cap.textContent = captions[index % captions.length];
+      var cap = document.createElement("div");
+      cap.className = "caption";
+      cap.textContent = captions[index % captions.length];
 
-        card.append(img, cap);
-        photoGallery.appendChild(card);
-      });
-      hint.textContent = "Potongan-potongan kecil yang pernah berarti. Tap foto untuk memperbesar.";
-    } else {
-      hint.textContent = "Belum ada foto di folder '" + FOLDER_FOTO + "' repo GitHub.";
+      card.append(img, cap);
+      photoGallery.appendChild(card);
+    });
+    hint.textContent = validPhotos.length + " foto dimuat dari folder '" + activePhotoFolder + "'. Tap foto untuk memperbesar.";
+  } else {
+    hint.textContent = "Belum ada foto (.jpg/.png/.webp) terbaca di folder '" + FOLDER_FOTO + "'. Pastikan repo Public dan file berada di dalam folder 'foto'.";
+  }
+
+  // Video
+  var vidFiles = await fetchFolderFiles(FOLDER_VIDEO);
+  var validVideos = vidFiles.filter(function (f) { return vidExt.test(f.name); });
+  if (validVideos.length) {
+    videoSection.style.display = "block";
+    videoGallery.innerHTML = "";
+    validVideos.forEach(function (vObj, idx) {
+      var card = document.createElement("div");
+      card.className = "video-card";
+
+      var player = document.createElement("video");
+      player.src = FOLDER_VIDEO + "/" + encodeURIComponent(vObj.name);
+      player.controls = true;
+      player.preload = "metadata";
+      player.playsInline = true;
+
+      var cap = document.createElement("div");
+      cap.className = "caption";
+      cap.textContent = "a little moving memory " + (idx + 1) + " ♡";
+
+      card.append(player, cap);
+      videoGallery.appendChild(card);
+    });
+  }
+
+  // Sketsa
+  var skFolders = [FOLDER_SKETSA, "Sketsa", "SKETSA"];
+  var skFiles = [];
+  var activeSkFolder = FOLDER_SKETSA;
+  for (var s = 0; s < skFolders.length; s++) {
+    var skFound = await fetchFolderFiles(skFolders[s]);
+    if (skFound.length) {
+      skFiles = skFound;
+      activeSkFolder = skFolders[s];
+      break;
     }
-
-    var videos = await listGitHubFolder(FOLDER_VIDEO, /\.(mp4|webm|mov|m4v)$/i);
-    if (videos.length) {
-      videoSection.style.display = "block";
-      videos.forEach(function (src, i) {
-        var card = document.createElement("div");
-        card.className = "video-card";
-
-        var player = document.createElement("video");
-        player.src = src;
-        player.controls = true;
-        player.preload = "metadata";
-        player.playsInline = true;
-
-        var cap = document.createElement("div");
-        cap.className = "caption";
-        cap.textContent = "a little moving memory " + (i + 1) + " ♡";
-
-        card.append(player, cap);
-        videoGallery.appendChild(card);
-      });
-    }
-
-    var sketches = await listGitHubFolder(FOLDER_SKETSA, /\.(jpe?g|png|webp|gif)$/i);
-    if (sketches.length) {
-      var preview = document.getElementById("sketchPreview");
-      var placeholder = document.getElementById("sketchPlaceholder");
-      preview.src = sketches[0];
-      preview.onload = function () {
-        preview.style.display = "block";
-        placeholder.style.display = "none";
-      };
-    }
-  } catch (e) {
-    hint.textContent = "Gagal memuat daftar foto dari GitHub.";
+  }
+  var validSketches = skFiles.filter(function (f) { return imgExt.test(f.name); });
+  if (validSketches.length) {
+    var preview = document.getElementById("sketchPreview");
+    var placeholder = document.getElementById("sketchPlaceholder");
+    attachSmartFallback(preview, buildImgCandidates(activeSkFolder, validSketches[0]));
+    preview.style.display = "block";
+    placeholder.style.display = "none";
   }
 })();
 
@@ -409,28 +455,4 @@ if (answerForm) {
         var msg = "Pengiriman gagal. Coba lagi beberapa saat.";
         try {
           var result = await response.json();
-          if (result.errors && result.errors.length) {
-            msg = result.errors.map(function (item) { return item.message; }).join(" ");
-          }
-        } catch (_) {}
-        throw new Error(msg);
-      }
-
-      status.textContent = "Terima kasih sudah menjawab ♡";
-      location.hash = "end";
-      showPage("end");
-    } catch (err) {
-      if (err && err.name === "TypeError") {
-        status.textContent = "Mengalihkan pengiriman...";
-        answerForm.submit();
-        return;
-      }
-      status.textContent = err.message || "Pengiriman gagal. Periksa koneksi internet lalu coba lagi.";
-      button.disabled = false;
-    }
-  });
-}
-</script>
-</body>
-  </html>
-  
+          if (result.errors && resu
