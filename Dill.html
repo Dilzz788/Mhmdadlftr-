@@ -13,10 +13,10 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'
 button,input,textarea{font:inherit}
 .wrap{max-width:760px;margin:0 auto;padding:20px 14px 50px}
 
-.page{display:none !important;width:100%}
-.page.active{display:block !important;animation:fade .3s ease}
+.page{display:none;width:100%}
+.page.is-current{display:block;animation:fade .25s ease}
 
-@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .paper{background:var(--paper);border-radius:24px;padding:25px 19px;box-shadow:0 10px 35px #76545b12}
 .center{text-align:center}
 .script{font-family:'Caveat',cursive;color:var(--rose);font-size:27px}
@@ -60,20 +60,20 @@ textarea.field{min-height:105px;resize:vertical}
 <div class="wrap">
 
 <!-- HALAMAN 1 -->
-<section class="page active" id="home">
+<section class="page is-current" id="home" style="display:block">
   <div class="paper center">
     <div class="sticker">💌</div>
     <div class="script">a little letter for you</div>
     <h1>Hai,Bebii</h1>
     <p>Aku ada sesuatu yang pengen aku sampein sama tanyakan sama kamu ,aku harap kamu jawab yaa</p>
     <div class="script">would you read it?</div>
-    <button type="button" class="btn" data-go="letter">Buka suratnya ♡</button>
+    <button type="button" class="btn" data-nav="letter">Buka suratnya ♡</button>
     <div class="footer">By Bibee</div>
   </div>
 </section>
 
 <!-- HALAMAN 2 -->
-<section class="page" id="letter">
+<section class="page" id="letter" style="display:none">
   <div class="paper">
     <div class="center">
       <div class="script">from my heart</div>
@@ -96,14 +96,14 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
   
 — Dari seseorang yang sedang belajar menjadi lebih baik.</div>
     <div class="center">
-      <button type="button" class="btn secondary" data-go="home">← Kembali</button>
-      <button type="button" class="btn" data-go="memories">Lihat sedikit kenangan ♡</button>
+      <button type="button" class="btn secondary" data-nav="home">← Kembali</button>
+      <button type="button" class="btn" data-nav="memories">Lihat sedikit kenangan ♡</button>
     </div>
   </div>
 </section>
 
 <!-- HALAMAN 3 -->
-<section class="page" id="memories">
+<section class="page" id="memories" style="display:none">
   <div class="paper">
     <div class="center">
       <div class="script">little pieces of yesterday</div>
@@ -122,14 +122,14 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
     </div>
 
     <div class="center">
-      <button type="button" class="btn secondary" data-go="letter">← Kembali</button>
-      <button type="button" class="btn" data-go="littlePlan">Ada satu hal lagi... ♡</button>
+      <button type="button" class="btn secondary" data-nav="letter">← Kembali</button>
+      <button type="button" class="btn" data-nav="littlePlan">Ada satu hal lagi... ♡</button>
     </div>
   </div>
 </section>
 
 <!-- HALAMAN 4 -->
-<section class="page" id="littlePlan">
+<section class="page" id="littlePlan" style="display:none">
   <div class="paper">
     <div class="center">
       <div class="script">a little idea from me</div>
@@ -150,14 +150,14 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
 </div>
     <div class="center">
       <p class="small">____</p>
-      <button type="button" class="btn secondary" data-go="memories">← Kembali</button>
-      <button type="button" class="btn" data-go="questions">Lanjut, ada yang pengen aku tanyain ♡</button>
+      <button type="button" class="btn secondary" data-nav="memories">← Kembali</button>
+      <button type="button" class="btn" data-nav="questions">Lanjut, ada yang pengen aku tanyain ♡</button>
     </div>
   </div>
 </section>
 
 <!-- HALAMAN 5: FORMSPREE -->
-<section class="page" id="questions">
+<section class="page" id="questions" style="display:none">
   <div class="paper">
     <div class="center">
       <div class="sticker">🌷</div>
@@ -188,7 +188,7 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
       </div>
 
       <div class="center">
-        <button type="button" class="btn secondary" data-go="littlePlan">← Kembali</button>
+        <button type="button" class="btn secondary" data-nav="littlePlan">← Kembali</button>
         <button class="btn" type="submit" id="send">Kirim jawabanku ♡</button>
       </div>
       <div class="center" id="status"></div>
@@ -197,7 +197,7 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
 </section>
 
 <!-- HALAMAN 6 -->
-<section class="page" id="end">
+<section class="page" id="end" style="display:none">
   <div class="paper center">
     <div class="sticker">🤍</div>
     <div class="script">thank you for being here</div>
@@ -225,117 +225,130 @@ const FOLDER_VIDEO  = "video";
 const FOLDER_SKETSA = "sketsa";
 const FORMSPREE_URL = "https://formspree.io/f/mnpdvwlv";
 
-const PAGES = ["home", "letter", "memories", "littlePlan", "questions", "end"];
+const ALL_PAGE_IDS = ["home", "letter", "memories", "littlePlan", "questions", "end"];
 
-function goToPage(id, updateHash) {
-  var targetId = PAGES.indexOf(id) !== -1 ? id : "home";
-  PAGES.forEach(function (pid) {
-    var el = document.getElementById(pid);
-    if (el) {
-      if (pid === targetId) {
-        el.classList.add("active");
-      } else {
-        el.classList.remove("active");
-      }
+function switchSection(targetId, syncHash) {
+  var validId = ALL_PAGE_IDS.indexOf(targetId) !== -1 ? targetId : "home";
+  ALL_PAGE_IDS.forEach(function (id) {
+    var sec = document.getElementById(id);
+    if (!sec) return;
+    if (id === validId) {
+      sec.classList.add("is-current");
+      sec.style.display = "block";
+    } else {
+      sec.classList.remove("is-current");
+      sec.style.display = "none";
     }
   });
-  if (updateHash !== false) {
+  if (syncHash !== false) {
     try {
-      history.replaceState(null, "", "#" + targetId);
+      history.replaceState(null, "", "#" + validId);
     } catch (_) {
-      location.hash = "#" + targetId;
+      location.hash = "#" + validId;
     }
   }
   window.scrollTo(0, 0);
 }
 
-document.addEventListener("click", function (e) {
-  var navBtn = e.target.closest("[data-go]");
-  if (navBtn) {
-    e.preventDefault();
-    goToPage(navBtn.getAttribute("data-go"), true);
+document.addEventListener("click", function (ev) {
+  var btn = ev.target.closest("[data-nav]");
+  if (btn) {
+    ev.preventDefault();
+    switchSection(btn.getAttribute("data-nav"), true);
   }
 });
 
 window.addEventListener("hashchange", function () {
   var id = (location.hash || "#home").replace(/^#/, "").split("?")[0];
-  goToPage(id, false);
+  switchSection(id, false);
 });
 
-goToPage((location.hash || "#home").replace(/^#/, "").split("?")[0], false);
+switchSection((location.hash || "#home").replace(/^#/, "").split("?")[0], false);
 
-async function fetchFolder(folder) {
+function fetchWithTimeout(url, ms) {
+  if (typeof AbortController === "undefined") {
+    return fetch(url, { cache: "no-store" });
+  }
+  var controller = new AbortController();
+  var timer = setTimeout(function () { controller.abort(); }, ms || 4500);
+  return fetch(url, { cache: "no-store", signal: controller.signal })
+    .finally(function () { clearTimeout(timer); });
+}
+
+async function readGitHubFolder(folder) {
   var clean = (folder || "").replace(/^\/+|\/+$/g, "");
-  var apiUrl = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean;
+  var url = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean;
   try {
-    var res = await fetch(apiUrl, { cache: "no-store" });
-    if (!res.ok) return { files: [], reason: "HTTP " + res.status };
+    var res = await fetchWithTimeout(url, 4500);
+    if (!res.ok) return { list: [], err: "HTTP " + res.status };
     var json = await res.json();
-    if (!Array.isArray(json)) return { files: [], reason: "Format respons bukan array" };
+    if (!Array.isArray(json)) return { list: [], err: "Respons tidak valid" };
     return {
-      files: json.filter(function (f) { return f && f.type === "file"; }),
-      reason: ""
+      list: json.filter(function (item) { return item && item.type === "file"; }),
+      err: ""
     };
-  } catch (err) {
-    return { files: [], reason: err && err.message ? err.message : "Gagal terhubung ke GitHub API" };
+  } catch (e) {
+    return { list: [], err: e && e.name === "AbortError" ? "Koneksi lambat / timeout" : "Gagal memuat daftar file" };
   }
 }
 
-function shuffle(arr) {
-  var a = arr.slice();
-  for (var i = a.length - 1; i > 0; i--) {
+function shuffleArray(arr) {
+  var copy = arr.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
-    var t = a[i]; a[i] = a[j]; a[j] = t;
+    var tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
   }
-  return a;
+  return copy;
 }
 
-function attachImageSources(imgEl, folder, fileObj) {
-  var enc = encodeURIComponent(fileObj.name);
+function bindImageFallbacks(imgEl, folder, fileObj) {
+  var encoded = encodeURIComponent(fileObj.name);
   var urls = [
-    folder + "/" + enc,
-    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/main/" + folder + "/" + enc,
-    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/HEAD/" + folder + "/" + enc
+    folder + "/" + encoded,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/main/" + folder + "/" + encoded,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/HEAD/" + folder + "/" + encoded
   ];
   if (fileObj.download_url) urls.push(fileObj.download_url);
 
-  var i = 0;
+  var idx = 0;
   imgEl.src = urls[0];
   imgEl.onerror = function () {
-    i++;
-    if (i < urls.length) {
-      imgEl.src = urls[i];
+    idx++;
+    if (idx < urls.length) {
+      imgEl.src = urls[idx];
     }
   };
 }
 
-(async function initMedia() {
+(async function loadGallery() {
   var hint = document.getElementById("mediaHint");
   var photoGallery = document.getElementById("photoGallery");
   var videoSection = document.getElementById("videoSection");
   var videoGallery = document.getElementById("videoGallery");
 
-  var imgRegex = /\.(jpe?g|png|webp|gif|jfif)$/i;
-  var vidRegex = /\.(mp4|webm|mov|m4v)$/i;
+  var imgExt = /\.(jpe?g|png|webp|gif|jfif)$/i;
+  var vidExt = /\.(mp4|webm|mov|m4v)$/i;
   var captions = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"];
 
-  var photoRes = await fetchFolder(FOLDER_FOTO);
-  var photos = shuffle(photoRes.files.filter(function (f) { return imgRegex.test(f.name); }));
+  var photoRes = await readGitHubFolder(FOLDER_FOTO);
+  var photos = shuffleArray(photoRes.list.filter(function (f) { return imgExt.test(f.name); }));
 
   if (photos.length > 0) {
     photoGallery.innerHTML = "";
-    photos.forEach(function (fileObj, idx) {
+    photos.forEach(function (fileObj, index) {
       var card = document.createElement("div");
       card.className = "polaroid";
 
       var img = document.createElement("img");
-      img.alt = "Kenangan " + (idx + 1);
-      attachImageSources(img, FOLDER_FOTO, fileObj);
+      img.alt = "Kenangan " + (index + 1);
+      bindImageFallbacks(img, FOLDER_FOTO, fileObj);
       img.onclick = function () { openViewer(img.currentSrc || img.src); };
 
       var cap = document.createElement("div");
       cap.className = "caption";
-      cap.textContent = captions[idx % captions.length];
+      cap.textContent = captions[index % captions.length];
 
       card.appendChild(img);
       card.appendChild(cap);
@@ -343,11 +356,11 @@ function attachImageSources(imgEl, folder, fileObj) {
     });
     hint.textContent = photos.length + " foto dimuat dari folder '" + FOLDER_FOTO + "'. Tap foto untuk memperbesar.";
   } else {
-    hint.textContent = "Belum ada foto terbaca di folder '" + FOLDER_FOTO + "'" + (photoRes.reason ? " (" + photoRes.reason + ")" : "") + ". Pastikan repo Public dan ada file .jpg/.png/.webp di folder 'foto'.";
+    hint.textContent = "Belum ada foto terbaca di folder '" + FOLDER_FOTO + "'" + (photoRes.err ? " (" + photoRes.err + ")" : "") + ". Pastikan repo Public & ada file foto di folder 'foto'.";
   }
 
-  var vidRes = await fetchFolder(FOLDER_VIDEO);
-  var videos = vidRes.files.filter(function (f) { return vidRegex.test(f.name); });
+  var vidRes = await readGitHubFolder(FOLDER_VIDEO);
+  var videos = vidRes.list.filter(function (f) { return vidExt.test(f.name); });
   if (videos.length > 0) {
     videoSection.style.display = "block";
     videoGallery.innerHTML = "";
@@ -355,28 +368,28 @@ function attachImageSources(imgEl, folder, fileObj) {
       var card = document.createElement("div");
       card.className = "video-card";
 
-      var video = document.createElement("video");
-      video.src = FOLDER_VIDEO + "/" + encodeURIComponent(vObj.name);
-      video.controls = true;
-      video.preload = "metadata";
-      video.playsInline = true;
+      var player = document.createElement("video");
+      player.src = FOLDER_VIDEO + "/" + encodeURIComponent(vObj.name);
+      player.controls = true;
+      player.preload = "metadata";
+      player.playsInline = true;
 
       var cap = document.createElement("div");
       cap.className = "caption";
       cap.textContent = "a little moving memory " + (idx + 1) + " ♡";
 
-      card.appendChild(video);
+      card.appendChild(player);
       card.appendChild(cap);
       videoGallery.appendChild(card);
     });
   }
 
-  var skRes = await fetchFolder(FOLDER_SKETSA);
-  var sketches = skRes.files.filter(function (f) { return imgRegex.test(f.name); });
+  var skRes = await readGitHubFolder(FOLDER_SKETSA);
+  var sketches = skRes.list.filter(function (f) { return imgExt.test(f.name); });
   if (sketches.length > 0) {
     var preview = document.getElementById("sketchPreview");
     var placeholder = document.getElementById("sketchPlaceholder");
-    attachImageSources(preview, FOLDER_SKETSA, sketches[0]);
+    bindImageFallbacks(preview, FOLDER_SKETSA, sketches[0]);
     preview.style.display = "block";
     placeholder.style.display = "none";
   }
@@ -428,26 +441,4 @@ if (answerForm) {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        var msg = "Pengiriman gagal. Coba lagi beberapa saat.";
-        try {
-          var result = await response.json();
-          if (result.errors && result.errors.length) {
-            msg = result.errors.map(function (item) { return item.message; }).join(" ");
-          }
-        } catch (_) {}
-        throw new Error(msg);
-      }
-
-      status.textContent = "Terima kasih sudah menjawab ♡";
-      goToPage("end", true);
-    } catch (err) {
-      if (err && err.name === "TypeError") {
-        status.textContent = "Mengalihkan pengiriman...";
-        answerForm.submit();
-        return;
-      }
-    
+        bo
