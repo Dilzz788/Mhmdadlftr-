@@ -9,12 +9,12 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Caveat:wght@500;600&display=swap');
 :root{--bg:#f7e8e7;--paper:#fffaf4;--rose:#b87985;--ink:#514047;--muted:#987f85;--line:#e8d4d4}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 button,input,textarea{font:inherit}
-.wrap{max-width:760px;margin:auto;padding:20px 14px 50px}
+.wrap{max-width:760px;margin:0 auto;padding:20px 14px 50px}
 
-.page{display:none;animation:fade .35s ease}
-.page.active{display:block}
+.page{display:none !important;width:100%}
+.page.active{display:block !important;animation:fade .3s ease}
 
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .paper{background:var(--paper);border-radius:24px;padding:25px 19px;box-shadow:0 10px 35px #76545b12}
@@ -67,7 +67,7 @@ textarea.field{min-height:105px;resize:vertical}
     <h1>Hai,Bebii</h1>
     <p>Aku ada sesuatu yang pengen aku sampein sama tanyakan sama kamu ,aku harap kamu jawab yaa</p>
     <div class="script">would you read it?</div>
-    <a class="btn" href="#letter">Buka suratnya ♡</a>
+    <button type="button" class="btn" data-go="letter">Buka suratnya ♡</button>
     <div class="footer">By Bibee</div>
   </div>
 </section>
@@ -96,8 +96,8 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
   
 — Dari seseorang yang sedang belajar menjadi lebih baik.</div>
     <div class="center">
-      <a class="btn secondary" href="#home">← Kembali</a>
-      <a class="btn" href="#memories">Lihat sedikit kenangan ♡</a>
+      <button type="button" class="btn secondary" data-go="home">← Kembali</button>
+      <button type="button" class="btn" data-go="memories">Lihat sedikit kenangan ♡</button>
     </div>
   </div>
 </section>
@@ -122,8 +122,8 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
     </div>
 
     <div class="center">
-      <a class="btn secondary" href="#letter">← Kembali</a>
-      <a class="btn" href="#littlePlan">Ada satu hal lagi... ♡</a>
+      <button type="button" class="btn secondary" data-go="letter">← Kembali</button>
+      <button type="button" class="btn" data-go="littlePlan">Ada satu hal lagi... ♡</button>
     </div>
   </div>
 </section>
@@ -150,8 +150,8 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
 </div>
     <div class="center">
       <p class="small">____</p>
-      <a class="btn secondary" href="#memories">← Kembali</a>
-      <a class="btn" href="#questions">Lanjut, ada yang pengen aku tanyain ♡</a>
+      <button type="button" class="btn secondary" data-go="memories">← Kembali</button>
+      <button type="button" class="btn" data-go="questions">Lanjut, ada yang pengen aku tanyain ♡</button>
     </div>
   </div>
 </section>
@@ -188,7 +188,7 @@ yaa mungkin kamu takut sama aku ,wajar aja karna perbuatan sama ucapan aku sendi
       </div>
 
       <div class="center">
-        <a class="btn secondary" href="#littlePlan">← Kembali</a>
+        <button type="button" class="btn secondary" data-go="littlePlan">← Kembali</button>
         <button class="btn" type="submit" id="send">Kirim jawabanku ♡</button>
       </div>
       <div class="center" id="status"></div>
@@ -225,79 +225,91 @@ const FOLDER_VIDEO  = "video";
 const FOLDER_SKETSA = "sketsa";
 const FORMSPREE_URL = "https://formspree.io/f/mnpdvwlv";
 
-const VALID_PAGES = ["home", "letter", "memories", "littlePlan", "questions", "end"];
+const PAGES = ["home", "letter", "memories", "littlePlan", "questions", "end"];
 
-function openPage(pageId) {
-  var id = VALID_PAGES.indexOf(pageId) !== -1 ? pageId : "home";
-  var pages = document.querySelectorAll(".page");
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].classList.remove("active");
-    pages[i].style.display = "none";
-  }
-  var target = document.getElementById(id);
-  if (target) {
-    target.classList.add("active");
-    target.style.display = "block";
+function goToPage(id, updateHash) {
+  var targetId = PAGES.indexOf(id) !== -1 ? id : "home";
+  PAGES.forEach(function (pid) {
+    var el = document.getElementById(pid);
+    if (el) {
+      if (pid === targetId) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    }
+  });
+  if (updateHash !== false) {
+    try {
+      history.replaceState(null, "", "#" + targetId);
+    } catch (_) {
+      location.hash = "#" + targetId;
+    }
   }
   window.scrollTo(0, 0);
 }
 
-function handleHash() {
-  var hashId = (location.hash || "#home").replace(/^#/, "").split("?")[0];
-  openPage(hashId);
-}
+document.addEventListener("click", function (e) {
+  var navBtn = e.target.closest("[data-go]");
+  if (navBtn) {
+    e.preventDefault();
+    goToPage(navBtn.getAttribute("data-go"), true);
+  }
+});
 
-window.addEventListener("hashchange", handleHash);
-handleHash();
+window.addEventListener("hashchange", function () {
+  var id = (location.hash || "#home").replace(/^#/, "").split("?")[0];
+  goToPage(id, false);
+});
 
-async function getFolderItems(folder) {
+goToPage((location.hash || "#home").replace(/^#/, "").split("?")[0], false);
+
+async function fetchFolder(folder) {
   var clean = (folder || "").replace(/^\/+|\/+$/g, "");
   var apiUrl = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/contents/" + clean;
   try {
-    var r = await fetch(apiUrl, { cache: "no-store" });
-    if (!r.ok) return { items: [], error: "HTTP " + r.status };
-    var json = await r.json();
-    if (!Array.isArray(json)) return { items: [], error: "Respons bukan list" };
+    var res = await fetch(apiUrl, { cache: "no-store" });
+    if (!res.ok) return { files: [], reason: "HTTP " + res.status };
+    var json = await res.json();
+    if (!Array.isArray(json)) return { files: [], reason: "Format respons bukan array" };
     return {
-      items: json.filter(function (f) { return f && f.type === "file"; }),
-      error: null
+      files: json.filter(function (f) { return f && f.type === "file"; }),
+      reason: ""
     };
-  } catch (e) {
-    return { items: [], error: e && e.message ? e.message : "Gagal fetch API" };
+  } catch (err) {
+    return { files: [], reason: err && err.message ? err.message : "Gagal terhubung ke GitHub API" };
   }
 }
 
 function shuffle(arr) {
-  var copy = arr.slice();
-  for (var i = copy.length - 1; i > 0; i--) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
-    var tmp = copy[i];
-    copy[i] = copy[j];
-    copy[j] = tmp;
+    var t = a[i]; a[i] = a[j]; a[j] = t;
   }
-  return copy;
+  return a;
 }
 
-function setImgWithFallback(imgEl, folder, fileObj) {
-  var encoded = encodeURIComponent(fileObj.name);
-  var sources = [
-    folder + "/" + encoded,
-    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/main/" + folder + "/" + encoded,
-    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/HEAD/" + folder + "/" + encoded
+function attachImageSources(imgEl, folder, fileObj) {
+  var enc = encodeURIComponent(fileObj.name);
+  var urls = [
+    folder + "/" + enc,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/main/" + folder + "/" + enc,
+    "https://raw.githubusercontent.com/" + GITHUB_USER + "/" + GITHUB_REPO + "/HEAD/" + folder + "/" + enc
   ];
-  if (fileObj.download_url) sources.push(fileObj.download_url);
+  if (fileObj.download_url) urls.push(fileObj.download_url);
 
-  var index = 0;
-  imgEl.src = sources[0];
+  var i = 0;
+  imgEl.src = urls[0];
   imgEl.onerror = function () {
-    index++;
-    if (index < sources.length) {
-      imgEl.src = sources[index];
+    i++;
+    if (i < urls.length) {
+      imgEl.src = urls[i];
     }
   };
 }
 
-(async function loadMedia() {
+(async function initMedia() {
   var hint = document.getElementById("mediaHint");
   var photoGallery = document.getElementById("photoGallery");
   var videoSection = document.getElementById("videoSection");
@@ -307,8 +319,8 @@ function setImgWithFallback(imgEl, folder, fileObj) {
   var vidRegex = /\.(mp4|webm|mov|m4v)$/i;
   var captions = ["a little memory ♡", "one of those days", "kept in this little book", "a moment to remember"];
 
-  var photoRes = await getFolderItems(FOLDER_FOTO);
-  var photos = shuffle(photoRes.items.filter(function (f) { return imgRegex.test(f.name); }));
+  var photoRes = await fetchFolder(FOLDER_FOTO);
+  var photos = shuffle(photoRes.files.filter(function (f) { return imgRegex.test(f.name); }));
 
   if (photos.length > 0) {
     photoGallery.innerHTML = "";
@@ -318,7 +330,7 @@ function setImgWithFallback(imgEl, folder, fileObj) {
 
       var img = document.createElement("img");
       img.alt = "Kenangan " + (idx + 1);
-      setImgWithFallback(img, FOLDER_FOTO, fileObj);
+      attachImageSources(img, FOLDER_FOTO, fileObj);
       img.onclick = function () { openViewer(img.currentSrc || img.src); };
 
       var cap = document.createElement("div");
@@ -329,13 +341,13 @@ function setImgWithFallback(imgEl, folder, fileObj) {
       card.appendChild(cap);
       photoGallery.appendChild(card);
     });
-    hint.textContent = "Potongan-potongan kecil yang pernah berarti. Tap foto untuk memperbesar.";
+    hint.textContent = photos.length + " foto dimuat dari folder '" + FOLDER_FOTO + "'. Tap foto untuk memperbesar.";
   } else {
-    hint.textContent = "Belum ada foto terbaca di folder '" + FOLDER_FOTO + "'" + (photoRes.error ? " (" + photoRes.error + ")" : "") + ".";
+    hint.textContent = "Belum ada foto terbaca di folder '" + FOLDER_FOTO + "'" + (photoRes.reason ? " (" + photoRes.reason + ")" : "") + ". Pastikan repo Public dan ada file .jpg/.png/.webp di folder 'foto'.";
   }
 
-  var vidRes = await getFolderItems(FOLDER_VIDEO);
-  var videos = vidRes.items.filter(function (f) { return vidRegex.test(f.name); });
+  var vidRes = await fetchFolder(FOLDER_VIDEO);
+  var videos = vidRes.files.filter(function (f) { return vidRegex.test(f.name); });
   if (videos.length > 0) {
     videoSection.style.display = "block";
     videoGallery.innerHTML = "";
@@ -359,12 +371,12 @@ function setImgWithFallback(imgEl, folder, fileObj) {
     });
   }
 
-  var skRes = await getFolderItems(FOLDER_SKETSA);
-  var sketches = skRes.items.filter(function (f) { return imgRegex.test(f.name); });
+  var skRes = await fetchFolder(FOLDER_SKETSA);
+  var sketches = skRes.files.filter(function (f) { return imgRegex.test(f.name); });
   if (sketches.length > 0) {
     var preview = document.getElementById("sketchPreview");
     var placeholder = document.getElementById("sketchPlaceholder");
-    setImgWithFallback(preview, FOLDER_SKETSA, sketches[0]);
+    attachImageSources(preview, FOLDER_SKETSA, sketches[0]);
     preview.style.display = "block";
     placeholder.style.display = "none";
   }
@@ -431,20 +443,11 @@ if (answerForm) {
       }
 
       status.textContent = "Terima kasih sudah menjawab ♡";
-      location.hash = "end";
-      openPage("end");
+      goToPage("end", true);
     } catch (err) {
       if (err && err.name === "TypeError") {
         status.textContent = "Mengalihkan pengiriman...";
         answerForm.submit();
         return;
       }
-      status.textContent = err.message || "Pengiriman gagal. Periksa koneksi internet lalu coba lagi.";
-      button.disabled = false;
-    }
-  });
-}
-</script>
-</body>
-          </html>
-
+    
